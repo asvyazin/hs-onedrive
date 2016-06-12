@@ -16,6 +16,7 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Onedrive.FolderChangesReader,
+                       Onedrive.Auth,
                        Onedrive.Types.AudioFacet,
                        Onedrive.Types.DeletedFacet,
                        Onedrive.Types.FileFacet,
@@ -28,6 +29,8 @@ library
                        Onedrive.Types.ItemReference,
                        Onedrive.Types.LocationFacet,
                        Onedrive.Types.OnedriveItem,
+                       Onedrive.Types.OauthTokenRequest,
+                       Onedrive.Types.OauthTokenResponse,
                        Onedrive.Types.PackageFacet,
                        Onedrive.Types.PhotoFacet,
                        Onedrive.Types.RemoteItemFacet,
@@ -37,6 +40,7 @@ library
                        Onedrive.Types.SpecialFolderFacet,
                        Onedrive.Types.Thumbnail,
                        Onedrive.Types.ThumbnailSet,
+                       Onedrive.Types.UserInfo,
                        Onedrive.Types.VideoFacet
   build-depends:       aeson,
                        base,
