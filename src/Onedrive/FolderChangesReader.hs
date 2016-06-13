@@ -12,7 +12,6 @@ import Data.Conduit (Source, (=$=))
 import qualified Data.Conduit.Combinators as DC (repeatM, concatMap)
 import Data.Text (Text)
 import Onedrive.Items (viewDelta)
-import Onedrive.Internal.Request (initRequest)
 import Onedrive.Types.FolderChangesBatch (token, value)
 import Onedrive.Types.OnedriveItem (OnedriveItem)
 

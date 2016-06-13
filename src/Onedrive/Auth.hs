@@ -11,7 +11,6 @@ import Data.Text (Text)
 import Data.Text.Encoding (encodeUtf8)
 import Onedrive.Types.OauthTokenRequest (OauthTokenRequest, clientId, redirectUri, clientSecret)
 import Onedrive.Types.OauthTokenResponse (OauthTokenResponse)
-import Onedrive.Types.UserInfo (UserInfo)
 import Network.HTTP.Simple (parseRequest, httpJSON, getResponseBody, setRequestHeaders, setRequestMethod, setRequestBodyURLEncoded, Request)
 import Network.HTTP.Types.Header (hAuthorization)
 
