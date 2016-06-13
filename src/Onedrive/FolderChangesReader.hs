@@ -3,23 +3,18 @@
 module Onedrive.FolderChangesReader (FolderChangesReader, newFolderChangesReader, getCurrentEnumerationToken, enumerateChanges) where
 
 
-import Blaze.ByteString.Builder (toByteString)
-import Onedrive.Types.OnedriveItem (OnedriveItem)
 import Control.Concurrent.STM (atomically)
 import Control.Concurrent.STM.TVar (TVar, writeTVar, newTVar, readTVar)
+import Control.Lens ((^.))
 import Control.Monad.Catch (MonadThrow)
 import Control.Monad.IO.Class (MonadIO(liftIO))
-import Data.Aeson (FromJSON(parseJSON), Value(Object), (.:), (.:?))
-import Data.ByteString.Char8 (unpack)
 import Data.Conduit (Source, (=$=))
 import qualified Data.Conduit.Combinators as DC (repeatM, concatMap)
-import Data.Maybe (maybeToList)
-import Data.Monoid ((<>))
 import Data.Text (Text)
-import Data.Text.Encoding (encodeUtf8)
-import Network.HTTP.Simple (parseRequest, setRequestHeaders, getResponseBody, httpJSON)
-import Network.HTTP.Types.Header (hAuthorization)
-import Network.HTTP.Types.URI (encodePath)
+import Onedrive.Items (viewDelta)
+import Onedrive.Internal.Request (initRequest)
+import Onedrive.Types.FolderChangesBatch (token, value)
+import Onedrive.Types.OnedriveItem (OnedriveItem)
 
 
 data FolderChangesReader =
@@ -52,37 +47,6 @@ enumerateChangesBatches (FolderChangesReader accessToken itemId currentToken) =
   where
     getChangesBatch' = do
       enumerationToken <- liftIO $ atomically $ readTVar currentToken
-      batch <- getChangesBatch accessToken itemId enumerationToken
-      liftIO $ atomically $ writeTVar currentToken $ Just $ folderChangesBatchToken batch
-      return $ folderChangesBatchValue batch
-
-
-getChangesBatch :: (MonadThrow m, MonadIO m) => Text -> Text -> Maybe Text -> m FolderChangesBatch
-getChangesBatch accessToken itemId enumerationToken = do
-  let
-    tokenParam tok =
-      ("token", Just (encodeUtf8 tok))
-    qsParams = ("top", Just "100") :
-      maybeToList (tokenParam <$> enumerationToken)
-    path =
-      toByteString $ encodePath ["drive", "items", itemId, "view.delta"] qsParams
-  initReq <- parseRequest $ unpack $ "https://api.onedrive.com/v1.0" <> path
-  let
-    req = setRequestHeaders [(hAuthorization, encodeUtf8 ("Bearer " <> accessToken))] initReq
-  getResponseBody <$> httpJSON req
-
-
-data FolderChangesBatch =
-  FolderChangesBatch
-  { folderChangesBatchValue :: [OnedriveItem]
-  , folderChangesBatchNextLink :: Maybe Text
-  , folderChangesBatchDeltaLink :: Maybe Text
-  , folderChangesBatchToken :: Text
-  } deriving (Show)
-
-
-instance FromJSON FolderChangesBatch where
-  parseJSON (Object o) =
-    FolderChangesBatch <$> o .: "value" <*> o .:? "@odata.nextLink" <*> o .:? "@odata.deltaLink" <*> o .: "@delta.token"
-  parseJSON _ =
-    error "Invalid FolderChangesBatch JSON"
+      batch <- viewDelta accessToken itemId enumerationToken
+      liftIO $ atomically $ writeTVar currentToken $ Just $ batch ^. token
+      return $ batch ^. value

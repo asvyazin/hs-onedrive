@@ -17,11 +17,14 @@ library
   hs-source-dirs:      src
   exposed-modules:     Onedrive.FolderChangesReader,
                        Onedrive.Auth,
+                       Onedrive.Items,
+                       Onedrive.Internal.Request,
                        Onedrive.User,
                        Onedrive.Types.AudioFacet,
                        Onedrive.Types.DeletedFacet,
                        Onedrive.Types.FileFacet,
                        Onedrive.Types.FileSystemInfoFacet,
+                       Onedrive.Types.FolderChangesBatch,
                        Onedrive.Types.FolderFacet,
                        Onedrive.Types.HashesType,
                        Onedrive.Types.Identity,
@@ -45,7 +48,6 @@ library
                        Onedrive.Types.VideoFacet
   build-depends:       aeson,
                        base,
-                       blaze-builder,
                        bytestring,
                        conduit,
                        conduit-combinators,
