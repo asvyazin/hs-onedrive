@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Onedrive.Auth (requestToken, requestRefreshToken, me) where
+module Onedrive.Auth (requestToken, requestRefreshToken, authorizeRequest) where
 
 
 import Control.Lens ((^.))
@@ -12,13 +12,13 @@ import Data.Text.Encoding (encodeUtf8)
 import Onedrive.Types.OauthTokenRequest (OauthTokenRequest, clientId, redirectUri, clientSecret)
 import Onedrive.Types.OauthTokenResponse (OauthTokenResponse)
 import Onedrive.Types.UserInfo (UserInfo)
-import Network.HTTP.Simple (parseRequest, httpJSON, getResponseBody, setRequestHeaders, setRequestMethod, setRequestBodyURLEncoded)
+import Network.HTTP.Simple (parseRequest, httpJSON, getResponseBody, setRequestHeaders, setRequestMethod, setRequestBodyURLEncoded, Request)
 import Network.HTTP.Types.Header (hAuthorization)
 
 
 requestToken :: (MonadThrow m, MonadIO m) => OauthTokenRequest -> Text -> m OauthTokenResponse
 requestToken req code = do
-  initReq <- parseRequest "https://login.live.com/oauth20_token.srf"
+  initReq <- initTokenRequest
   let
     initParams =
       serializeOauthTokenRequest req
@@ -33,7 +33,7 @@ requestToken req code = do
 
 requestRefreshToken :: (MonadThrow m, MonadIO m) => OauthTokenRequest -> Text -> m OauthTokenResponse
 requestRefreshToken req tok = do
-  initReq <- parseRequest "https://login.live.com/oauth20_token.srf"
+  initReq <- initTokenRequest
   let
     initParams =
       serializeOauthTokenRequest req
@@ -46,13 +46,14 @@ requestRefreshToken req tok = do
   getResponseBody <$> httpJSON httpReq
 
 
-me :: (MonadThrow m, MonadIO m) => Text -> m UserInfo
-me token = do
-  initReq <- parseRequest "https://apis.live.net/v5.0/me"
-  let
-    httpReq =
-      setRequestHeaders [(hAuthorization, encodeUtf8 ("Bearer " <> token))] initReq
-  getResponseBody <$> httpJSON httpReq
+authorizeRequest :: Text -> Request -> Request
+authorizeRequest token =
+  setRequestHeaders [(hAuthorization, encodeUtf8 ("Bearer " <> token))]
+
+
+initTokenRequest :: (MonadThrow m) => m Request
+initTokenRequest =
+  parseRequest "https://login.live.com/oauth20_token.srf"
 
 
 serializeOauthTokenRequest :: OauthTokenRequest -> [(ByteString, ByteString)]

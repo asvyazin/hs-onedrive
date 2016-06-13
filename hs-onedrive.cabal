@@ -17,6 +17,7 @@ library
   hs-source-dirs:      src
   exposed-modules:     Onedrive.FolderChangesReader,
                        Onedrive.Auth,
+                       Onedrive.User,
                        Onedrive.Types.AudioFacet,
                        Onedrive.Types.DeletedFacet,
                        Onedrive.Types.FileFacet,
