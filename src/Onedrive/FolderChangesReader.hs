@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE FlexibleContexts #-}
 module Onedrive.FolderChangesReader (FolderChangesReader, newFolderChangesReader, getCurrentEnumerationToken, enumerateChanges) where
 
 
@@ -12,22 +10,23 @@ import Data.Conduit (Source, (=$=))
 import qualified Data.Conduit.Combinators as DC (repeatM, concatMap)
 import Data.Text (Text)
 import Onedrive.Items (viewDelta)
+import Onedrive.Session (Session)
 import Onedrive.Types.FolderChangesBatch (token, value)
 import Onedrive.Types.OnedriveItem (OnedriveItem)
 
 
 data FolderChangesReader =
   FolderChangesReader
-  { folderChangesReaderAccessToken :: Text
+  { folderChangesReaderSession :: Session
   , folderChangesReaderItemId :: Text
   , folderChangesReaderCurrentEnumerationToken :: TVar (Maybe Text)
   }
 
 
-newFolderChangesReader :: (MonadIO m) => Text -> Text -> Maybe Text -> m FolderChangesReader
-newFolderChangesReader accessToken itemId enumerationToken = do
+newFolderChangesReader :: (MonadIO m) => Session -> Text -> Maybe Text -> m FolderChangesReader
+newFolderChangesReader session itemId enumerationToken = do
   currentToken <- liftIO $ atomically $ newTVar enumerationToken
-  return $ FolderChangesReader accessToken itemId currentToken
+  return $ FolderChangesReader session itemId currentToken
 
 
 getCurrentEnumerationToken :: (MonadIO m) => FolderChangesReader -> m (Maybe Text)
@@ -41,11 +40,10 @@ enumerateChanges changesReader =
 
 
 enumerateChangesBatches :: (MonadIO m, MonadThrow m) => FolderChangesReader -> Source m [OnedriveItem]
-enumerateChangesBatches (FolderChangesReader accessToken itemId currentToken) =
+enumerateChangesBatches (FolderChangesReader session itemId currentToken) =
   DC.repeatM getChangesBatch'
   where
     getChangesBatch' = do
       enumerationToken <- liftIO $ atomically $ readTVar currentToken
-      batch <- viewDelta accessToken itemId enumerationToken
-      liftIO $ atomically $ writeTVar currentToken $ Just $ batch ^. token
+      batch <- viewDelta session itemId enumerationToken
       return $ batch ^. value

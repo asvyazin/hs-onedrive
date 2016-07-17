@@ -9,10 +9,11 @@ import Data.ByteString (ByteString)
 import Data.Monoid ((<>))
 import Data.Text (Text)
 import Data.Text.Encoding (encodeUtf8)
-import Onedrive.Types.OauthTokenRequest (OauthTokenRequest, clientId, redirectUri, clientSecret)
-import Onedrive.Types.OauthTokenResponse (OauthTokenResponse)
 import Network.HTTP.Simple (parseRequest, httpJSON, getResponseBody, setRequestHeaders, setRequestMethod, setRequestBodyURLEncoded, Request)
 import Network.HTTP.Types.Header (hAuthorization)
+import Onedrive.Session (Session, getAccessToken)
+import Onedrive.Types.OauthTokenRequest (OauthTokenRequest, clientId, redirectUri, clientSecret)
+import Onedrive.Types.OauthTokenResponse (OauthTokenResponse)
 
 
 requestToken :: (MonadThrow m, MonadIO m) => OauthTokenRequest -> Text -> m OauthTokenResponse
@@ -45,9 +46,10 @@ requestRefreshToken req tok = do
   getResponseBody <$> httpJSON httpReq
 
 
-authorizeRequest :: Text -> Request -> Request
-authorizeRequest token =
-  setRequestHeaders [(hAuthorization, encodeUtf8 ("Bearer " <> token))]
+authorizeRequest :: Session -> Request -> IO Request
+authorizeRequest session req = do
+  accessToken <- getAccessToken session
+  return $ setRequestHeaders [(hAuthorization, encodeUtf8 ("Bearer " <> accessToken))] req
 
 
 initTokenRequest :: (MonadThrow m) => m Request
