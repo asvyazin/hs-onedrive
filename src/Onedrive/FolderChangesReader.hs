@@ -46,4 +46,7 @@ enumerateChangesBatches (FolderChangesReader session itemId currentToken) =
     getChangesBatch' = do
       enumerationToken <- liftIO $ atomically $ readTVar currentToken
       batch <- viewDelta session itemId enumerationToken
+      let
+        newToken = batch ^. token
+      liftIO $ atomically $ writeTVar currentToken $ Just newToken
       return $ batch ^. value
