@@ -1,13 +1,10 @@
 module Onedrive.Internal.Response (json, lbs) where
 
 
-import Control.Concurrent.STM (atomically)
-import Control.Concurrent.STM.TVar (TVar, writeTVar, readTVar)
 import Control.Monad.Catch (MonadThrow(throwM))
 import Control.Monad.IO.Class (MonadIO(liftIO))
 import Data.Aeson (FromJSON)
 import Data.ByteString.Lazy (ByteString)
-import Data.Text (Text)
 import Network.HTTP.Client (responseCookieJar)
 import Network.HTTP.Simple (HttpException(StatusCodeException), Request, Response, httpJSONEither, httpLBS, getResponseStatus, getResponseBody, getResponseHeaders)
 import Network.HTTP.Types.Status (unauthorized401, ok200)

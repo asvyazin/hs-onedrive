@@ -1,10 +1,8 @@
 module Onedrive.User (me) where
 
 
-import Control.Concurrent.STM.TVar (TVar)
 import Control.Monad.Catch (MonadThrow)
 import Control.Monad.IO.Class (MonadIO)
-import Data.Text (Text)
 import Network.HTTP.Simple (parseRequest)
 import Onedrive.Internal.Response (json)
 import Onedrive.Session (Session)

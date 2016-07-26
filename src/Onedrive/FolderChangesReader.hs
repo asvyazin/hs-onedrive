@@ -1,4 +1,4 @@
-module Onedrive.FolderChangesReader (FolderChangesReader, newFolderChangesReader, getCurrentEnumerationToken, enumerateChanges) where
+module Onedrive.FolderChangesReader (FolderChangesReader(..), newFolderChangesReader, getCurrentEnumerationToken, enumerateChanges) where
 
 
 import Control.Concurrent.STM (atomically)

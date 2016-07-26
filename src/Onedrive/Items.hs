@@ -2,7 +2,6 @@
 module Onedrive.Items where
 
 
-import Control.Concurrent.STM.TVar (TVar)
 import Control.Monad.Catch (MonadThrow)
 import Control.Monad.IO.Class (MonadIO)
 import Data.ByteString.Lazy (ByteString)
