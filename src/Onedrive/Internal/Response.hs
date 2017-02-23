@@ -1,12 +1,14 @@
 module Onedrive.Internal.Response (json, lbs) where
 
 
+import Control.Monad (void)
 import Control.Monad.Catch (MonadThrow(throwM))
 import Control.Monad.IO.Class (MonadIO(liftIO))
 import Data.Aeson (FromJSON)
+import Data.ByteString (empty)
 import Data.ByteString.Lazy (ByteString)
-import Network.HTTP.Client (responseCookieJar)
-import Network.HTTP.Simple (HttpException(StatusCodeException), Request, Response, httpJSONEither, httpLBS, getResponseStatus, getResponseBody, getResponseHeaders)
+import Network.HTTP.Conduit (HttpExceptionContent(StatusCodeException))
+import Network.HTTP.Simple (HttpException(HttpExceptionRequest), Request, Response, httpJSONEither, httpLBS, getResponseStatus, getResponseBody)
 import Network.HTTP.Types.Status (unauthorized401, ok200)
 import Onedrive.Auth (authorizeRequest)
 import Onedrive.Session (Session, tryRenewToken)
@@ -33,7 +35,7 @@ doRequest allowRenew session req getResponse processBody = do
     responseStatus =
       getResponseStatus resp
     throwException =
-      throwM $ StatusCodeException responseStatus (getResponseHeaders resp) (responseCookieJar resp)
+      throwM $ HttpExceptionRequest req $ StatusCodeException (void resp) empty
   if responseStatus == ok200
     then
     processBody $ getResponseBody resp
